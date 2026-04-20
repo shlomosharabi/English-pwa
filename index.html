@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>האנגלית שלי</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e50c8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="אנגלית">
+  <meta name="application-name" content="האנגלית שלי">
+  <meta name="description" content="אפליקציית מבחן מילים באנגלית אישית">
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192x192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --card: #16213e;
+      --card2: #1a2744;
+      --accent: #1e50c8;
+      --accent2: #3d7df8;
+      --accent-glow: rgba(61,125,248,0.3);
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #e8eaf6;
+      --muted: #7986cb;
+      --border: rgba(255,255,255,0.08);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      background: var(--bg);
+      font-family: 'Rubik', sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 30% 20%, rgba(61,125,248,0.12) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(30,80,200,0.08) 0%, transparent 50%);
+      animation: bgPulse 8s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes bgPulse {
+      from { transform: scale(1) rotate(0deg); }
+      to   { transform: scale(1.1) rotate(3deg); }
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 24px);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 20px 0 24px;
+      animation: fadeDown 0.5s ease;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .word-count-badge {
+      display: inline-block;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent2);
+      color: var(--accent2);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      animation: fadeUp 0.4s ease both;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0 0 14px;
+    }
+
+    /* Inputs */
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Rubik', sans-serif;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input[type="text"]::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Rubik', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 4px 20px rgba(61,125,248,0.35);
+      margin-top: 12px;
+    }
+    .btn-primary:active { box-shadow: 0 2px 10px rgba(61,125,248,0.2); }
+
+    .btn-quiz {
+      background: linear-gradient(135deg, #6c3bc8, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 20px rgba(108,59,200,0.35);
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: white;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+    }
+
+    .btn-back {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* Word List */
+    .word-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .word-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeUp 0.3s ease both;
+    }
+    .word-pair {
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .word-pair .heb { color: var(--text); }
+    .word-pair .sep { color: var(--muted); margin: 0 6px; }
+    .word-pair .eng { color: var(--accent2); font-weight: 700; }
+    .del-btn {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .del-btn:active { background: rgba(239,68,68,0.3); }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--muted);
+    }
+    .empty-state .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+    .empty-state p { margin: 0; font-size: 14px; }
+
+    /* Quiz Area */
+    #quizArea { display: none; animation: fadeUp 0.4s ease both; }
+
+    .quiz-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .quiz-header h2 {
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0 0 4px;
+      color: var(--text);
+    }
+    .quiz-header .sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .question-card {
+      background: linear-gradient(135deg, var(--card), var(--card2));
+      border: 1px solid rgba(61,125,248,0.2);
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .question-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .question-word {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .option-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      padding: 16px;
+      font-family: 'Rubik', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .option-btn:not(:disabled):active { transform: scale(0.97); }
+    .option-btn:not(:disabled):hover {
+      background: rgba(61,125,248,0.1);
+      border-color: var(--accent2);
+    }
+    .option-btn.correct {
+      background: rgba(34,197,94,0.15) !important;
+      border-color: var(--green) !important;
+      color: var(--green) !important;
+    }
+    .option-btn.wrong {
+      background: rgba(239,68,68,0.15) !important;
+      border-color: var(--red) !important;
+      color: var(--red) !important;
+    }
+
+    .feedback-box {
+      text-align: center;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      transition: all 0.3s;
+    }
+    .feedback-box.correct {
+      background: rgba(34,197,94,0.12);
+      color: var(--green);
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .feedback-box.wrong {
+      background: rgba(239,68,68,0.12);
+      color: var(--red);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+
+    /* Install banner */
+    #installBanner {
+      display: none;
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 16px);
+      left: 16px; right: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 32px rgba(30,80,200,0.5);
+      z-index: 100;
+      animation: slideUp 0.4s ease;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .install-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .install-icon { font-size: 28px; flex-shrink: 0; }
+    .install-text { flex: 1; }
+    .install-text strong { display: block; font-size: 14px; font-weight: 700; color: white; }
+    .install-text span { font-size: 12px; color: rgba(255,255,255,0.8); }
+    .install-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .install-actions button {
+      flex: 1; padding: 10px; border: none; border-radius: 10px;
+      font-family: 'Rubik', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn-install { background: white; color: var(--accent); }
+    .btn-dismiss { background: rgba(255,255,255,0.2); color: white; }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: pop 0.25s ease; }
+
+    /* Safe area spacing on quiz buttons */
+    .quiz-actions { padding-bottom: 4px; display: flex; flex-direction: column; gap: 10px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- MAIN UI -->
+  <div id="mainUI">
+    <div class="header">
+      <h1>האנגלית שלי 📝</h1>
+      <p>הוסף מילים ובחן את עצמך</p>
+      <span class="word-count-badge" id="countBadge">0 מילים ברשימה</span>
+    </div>
+
+    <div class="card" style="animation-delay:0.05s">
+      <div class="card-title">➕ הוסף מילה חדשה</div>
+      <div class="input-row">
+        <div class="input-wrap">
+          <label>עברית</label>
+          <input type="text" id="hebWord" placeholder="למשל: כן" autocomplete="off">
+        </div>
+        <div class="input-wrap">
+          <label>אנגלית</label>
+          <input type="text" id="engWord" placeholder="Yes" autocomplete="off" dir="ltr">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addWord()">הוסף לרשימה</button>
+    </div>
+
+    <button class="btn btn-quiz" style="margin-bottom:16px;" onclick="startQuiz()">התחל מבחן ✍️</button>
+
+    <div class="card" id="listCard" style="animation-delay:0.1s">
+      <div class="card-title">📚 מילים ברשימה</div>
+      <ul class="word-list" id="wordList"></ul>
+    </div>
+  </div>
+
+  <!-- QUIZ UI -->
+  <div id="quizArea">
+    <div class="quiz-header">
+      <h2>מבחן אמריקאי ✍️</h2>
+      <div class="sub">בחר את התרגום הנכון</div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">איך אומרים באנגלית?</div>
+      <div class="question-word" id="questionText">—</div>
+    </div>
+
+    <div class="options-grid" id="options"></div>
+
+    <div class="feedback-box" id="feedbackBox"></div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-next" id="nextBtn" style="display:none" onclick="nextQuestion()">לשאלה הבאה →</button>
+      <button class="btn btn-back" onclick="stopQuiz()">← חזור לתפריט</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Install Banner -->
+<div id="installBanner">
+  <div class="install-content">
+    <span class="install-icon">📲</span>
+    <div class="install-text">
+      <strong>הוסף למסך הבית</strong>
+      <span>גישה מהירה, עובד ללא אינטרנט</span>
+    </div>
+  </div>
+  <div class="install-actions">
+    <button class="btn-install" id="installBtn" onclick="installApp()">התקן</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">אחר כך</button>
+  </div>
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────
+  let words = JSON.parse(localStorage.getItem('myWords')) || [];
+  let currentQuestion = {};
+  let deferredPrompt = null;
+
+  // ─── Init ─────────────────────────────────────────────
+  renderWords();
+
+  // ─── Add Word ─────────────────────────────────────────
+  function addWord() {
+    const hebEl = document.getElementById('hebWord');
+    const engEl = document.getElementById('engWord');
+    const heb = hebEl.value.trim();
+    const eng = engEl.value.trim();
+    if (!heb || !eng) return;
+    words.push({ heb, eng });
+    save();
+    renderWords();
+    hebEl.value = '';
+    engEl.value = '';
+    hebEl.focus();
+  }
+
+  // Enter key support
+  document.getElementById('engWord').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addWord();
+  });
+  document.getElementById('hebWord').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('engWord').focus();
+  });
+
+  // ─── Render ──────────────────────────────────────────
+  function renderWords() {
+    const list = document.getElementById('wordList');
+    const badge = document.getElementById('countBadge');
+    badge.textContent = words.length + ' מילים ברשימה';
+
+    if (words.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <span class="emoji">📖</span>
+        <p>הרשימה ריקה — הוסף מילים כדי להתחיל!</p>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = [...words].reverse().map((w, ri) => {
+      const i = words.length - 1 - ri;
+      return `<li class="word-item" style="animation-delay:${ri * 0.04}s">
+        <span class="word-pair">
+          <span class="heb">${escHtml(w.heb)}</span>
+          <span class="sep">=</span>
+          <span class="eng">${escHtml(w.eng)}</span>
+        </span>
+        <button class="del-btn" onclick="deleteWord(${i})" aria-label="מחק">✕</button>
+      </li>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function save() {
+    localStorage.setItem('myWords', JSON.stringify(words));
+  }
+
+  function deleteWord(i) {
+    words.splice(i, 1);
+    save();
+    renderWords();
+  }
+
+  // ─── Quiz ─────────────────────────────────────────────
+  function startQuiz() {
+    if (words.length < 3) {
+      alert('צריך לפחות 3 מילים ברשימה כדי ליצור מבחן!');
+      return;
+    }
+    document.getElementById('mainUI').style.display = 'none';
+    document.getElementById('quizArea').style.display = 'block';
+    nextQuestion();
+  }
+
+  function stopQuiz() {
+    document.getElementById('mainUI').style.display = 'block';
+    document.getElementById('quizArea').style.display = 'none';
+  }
+
+  function nextQuestion() {
+    const feedbackBox = document.getElementById('feedbackBox');
+    const nextBtn = document.getElementById('nextBtn');
+    feedbackBox.textContent = '';
+    feedbackBox.className = 'feedback-box';
+    nextBtn.style.display = 'none';
+
+    const correctWord = words[Math.floor(Math.random() * words.length)];
+    currentQuestion = correctWord;
+
+    let opts = [correctWord.eng];
+    let attempts = 0;
+    while (opts.length < 3 && attempts < 100) {
+      const rand = words[Math.floor(Math.random() * words.length)].eng;
+      if (!opts.includes(rand)) opts.push(rand);
+      attempts++;
+    }
+    opts.sort(() => Math.random() - 0.5);
+
+    document.getElementById('questionText').textContent = correctWord.heb;
+
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = opts.map(opt =>
+      `<button class="option-btn" onclick="checkAnswer(this,'${escHtml(opt)}')">${escHtml(opt)}</button>`
+    ).join('');
+  }
+
+  function checkAnswer(btn, selected) {
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    const feedbackBox = document.getElementById('feedbackBox');
+
+    if (selected === currentQuestion.eng) {
+      btn.classList.add('correct');
+      feedbackBox.textContent = '✨ כל הכבוד! נכון מאוד';
+      feedbackBox.className = 'feedback-box correct';
+    } else {
+      btn.classList.add('wrong');
+      feedbackBox.textContent = `❌ לא נכון... התשובה: ${currentQuestion.eng}`;
+      feedbackBox.className = 'feedback-box wrong';
+      // highlight correct
+      document.querySelectorAll('.option-btn').forEach(b => {
+        if (b.textContent === currentQuestion.eng) b.classList.add('correct');
+      });
+    }
+    document.getElementById('nextBtn').style.display = 'block';
+  }
+
+  // ─── PWA Install ──────────────────────────────────────
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show banner after 3s if not already installed
+    if (!localStorage.getItem('pwaInstalled')) {
+      setTimeout(() => {
+        document.getElementById('installBanner').style.display = 'block';
+      }, 3000);
+    }
+  });
+
+  function installApp() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      if (r.outcome === 'accepted') {
+        localStorage.setItem('pwaInstalled', '1');
+      }
+      dismissInstall();
+      deferredPrompt = null;
+    });
+  }
+
+  function dismissInstall() {
+    document.getElementById('installBanner').style.display = 'none';
+  }
+
+  window.addEventListener('appinstalled', () => {
+    localStorage.setItem('pwaInstalled', '1');
+    dismissInstall();
+  });
+
+  // ─── Service Worker ───────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
