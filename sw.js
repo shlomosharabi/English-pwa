@@ -1,8 +1,8 @@
 const CACHE_NAME = 'english-app-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
+  '//English-pwa/',
+  '/English-pwa/index.html',
+  '/English-pwa/manifest.json',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png'
 ];
